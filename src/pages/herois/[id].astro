@@ -1,0 +1,97 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import heroisData from '../../data/herois.json';
+
+export function getStaticPaths() {
+  return heroisData.map(heroi => ({
+    params: { id: heroi.id },
+    props: { heroi }
+  }));
+}
+
+const { heroi } = Astro.props;
+const title = `${heroi.nome} — ${heroi.titulo}`;
+const description = heroi.resumo;
+---
+
+<Layout title={title} description={description}>
+  <!-- Hero Header -->
+  <section class="bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white py-16 px-4">
+    <div class="max-w-4xl mx-auto">
+      <a href="/" class="text-emerald-200 hover:text-white text-sm mb-4 inline-block">← Voltar</a>
+      <div class="flex items-center gap-6">
+        <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center text-5xl">
+          🦸
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold">{heroi.nome}</h1>
+          <p class="text-emerald-200 text-lg mt-1">{heroi.titulo}</p>
+          <p class="text-emerald-300 text-sm mt-1">{heroi.periodo}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="md:col-span-2 space-y-6">
+        <!-- Resumo -->
+        <section>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Resumo</h2>
+          <p class="text-gray-700 leading-relaxed">{heroi.resumo}</p>
+        </section>
+
+        <!-- Biografia -->
+        <section>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Biografia</h2>
+          <div class="space-y-4">
+            {heroi.biografia.map((paragrafo) => (
+              <p class="text-gray-700 leading-relaxed">{paragrafo}</p>
+            ))}
+          </div>
+        </section>
+
+        <!-- YouTube -->
+        {heroi.youtube && (
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 mb-4">📹 Vídeo</h2>
+            <a href={heroi.youtube} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+              Assistir no YouTube
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          </section>
+        )}
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Tags -->
+        <section class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 class="font-semibold text-gray-800 mb-3">Tags</h3>
+          <div class="flex flex-wrap gap-2">
+            {heroi.tags.map((tag) => (
+              <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">{tag}</span>
+            ))}
+          </div>
+        </section>
+
+        <!-- Fontes -->
+        <section class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 class="font-semibold text-gray-800 mb-3">📚 Fontes</h3>
+          <div class="space-y-2">
+            {heroi.fontes.map((fonte) => (
+              <a href={fonte.url} target="_blank" rel="noopener noreferrer" class="block text-sm text-blue-600 hover:text-blue-800 truncate">
+                {fonte.titulo} ↗
+              </a>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-200 py-8 text-center text-sm text-gray-400">
+    <p>© 2026 Heróis Brasileiros</p>
+  </footer>
+</Layout>

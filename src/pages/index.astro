@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+import herois from '../data/herois.json';
+
+const title = "Heróis Brasileiros — Histórias de Liderança e Coragem";
+const description = "Conheça a história dos maiores heróis do Brasil. Tiradentes, Zumbi dos Palmares, Santos Dumont e muito mais.";
+---
+
+<Layout title={title} description={description}>
+  <section class="bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white py-16 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">🦸 Heróis Brasileiros</h1>
+      <p class="text-emerald-100 text-lg max-w-2xl mx-auto">
+        Histórias de liderança, coragem e transformação social que moldaram o Brasil.
+      </p>
+    </div>
+  </section>
+
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {herois.map((heroi) => (
+        <a href={`/herois/${heroi.id}`} class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all group">
+          <div class="h-48 bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+            <span class="text-6xl">🦸</span>
+          </div>
+          <div class="p-5">
+            <h2 class="font-bold text-lg text-gray-900 group-hover:text-emerald-600 transition-colors">{heroi.nome}</h2>
+            <p class="text-sm text-gray-500 mt-1">{heroi.titulo}</p>
+            <p class="text-xs text-gray-400 mt-1">{heroi.periodo}</p>
+            <p class="text-sm text-gray-600 mt-3 line-clamp-3">{heroi.resumo}</p>
+            <div class="flex gap-1.5 mt-3 flex-wrap">
+              {heroi.tags.map((tag) => (
+                <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </main>
+
+  <footer class="border-t border-gray-200 py-8 text-center text-sm text-gray-400">
+    <p>© 2026 Heróis Brasileiros</p>
+  </footer>
+</Layout>

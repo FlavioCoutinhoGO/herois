@@ -1,0 +1,57 @@
+[
+  {
+    "id": "tiradentes",
+    "nome": "Tiradentes",
+    "titulo": "Herói da Independência do Brasil",
+    "periodo": "1746-1792",
+    "resumo": "Joaquim José da Silva Xavier, conhecido como Tiradentes, foi um dentista, minerador e ativista político brasileiro, líder da Inconfidência Mineira.",
+    "biografia": [
+      "Nascido em 1746 em Minas Gerais, Tiradentes foi um dos líderes do movimento separatista conhecido como Inconfidência Mineira.",
+      "O movimento buscava a independência de Minas Gerais do domínio português, inspirado pelos ideais da Revolução Americana e Francesa.",
+      "Descoberto e preso em 1789, Tiradentes foi julgado e condenado à morte por enforcamento em 1792.",
+      "Sua execução pública em 21 de abril de 1792 transformou-o em mártir da independência brasileira.",
+      "Hoje, Tiradentes é símbolo da luta pela liberdade e tem seu nome imortalizado em cidades, ruas e instituições por todo o Brasil."
+    ],
+    "youtube": "https://www.youtube.com/watch?v=exemplo",
+    "fontes": [
+      {"titulo": "Wikipedia - Tiradentes", "url": "https://pt.wikipedia.org/wiki/Tiradentes"}
+    ],
+    "tags": ["Independência", "Minas Gerais", "Século XVIII"]
+  },
+  {
+    "id": "zumbi-dos-palmares",
+    "nome": "Zumbi dos Palmares",
+    "titulo": "Líder do Quilombo dos Palmares",
+    "periodo": "1655-1695",
+    "resumo": "Zumbi foi o último líder do Quilombo dos Palmares, símbolo da resistência negra contra a escravidão no Brasil colonial.",
+    "biografia": [
+      "Nascido livre no Quilombo dos Palmares, Zumbi foi capturado ainda criança e entregue a um padre.",
+      "Educado pelo padre, aprendeu português e latim, mas aos 15 anos retornou ao quilombo.",
+      "Tornou-se líder militar e depois líder do Quilombo dos Palmares, resistindo a diversas expedições militares portuguesas.",
+      "Em 20 de novembro de 1695, Zumbi foi capturado e morto. O Dia da Consciência Negra é celebrado em sua homenagem."
+    ],
+    "youtube": "https://www.youtube.com/watch?v=exemplo",
+    "fontes": [
+      {"titulo": "Wikipedia - Zumbi dos Palmares", "url": "https://pt.wikipedia.org/wiki/Zumbi_dos_Palmares"}
+    ],
+    "tags": ["Quilombo", "Pernambuco", "Século XVII", "Consciência Negra"]
+  },
+  {
+    "id": "santos-dumont",
+    "nome": "Santos Dumont",
+    "titulo": "Pai da Aviação",
+    "periodo": "1873-1932",
+    "resumo": "Alberto Santos-Dumont foi um inventor e aeronauta brasileiro, considerado por muitos como o pai da aviação.",
+    "biografia": [
+      "Nascido em Minas Gerais em 1873, Santos Dumont mudou-se para a França para estudar engenharia.",
+      "Em 1901, circum-navegou a Torre Eiffel no dirigível nº 6, ganhando o prêmio Deutsch de la Meurthe.",
+      "Em 23 de outubro de 1906, realizou o primeiro voo público oficial de um avião mais pesado que o ar.",
+      "Em 1909, criou o Demoiselle, o primeiro avião de produção em série."
+    ],
+    "youtube": "https://www.youtube.com/watch?v=exemplo",
+    "fontes": [
+      {"titulo": "Wikipedia - Santos Dumont", "url": "https://pt.wikipedia.org/wiki/Santos-Dumont"}
+    ],
+    "tags": ["Aviação", "Minas Gerais", "Século XX"]
+  }
+]

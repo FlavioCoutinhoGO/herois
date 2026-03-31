@@ -1,0 +1,42 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Histórias de heróis brasileiros que moldaram o Brasil." } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content="Heróis Brasileiros" />
+    <meta name="keywords" content="heróis brasileiros, Tiradentes, Zumbi, Santos Dumont, história do Brasil" />
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+  </head>
+  <body class="bg-gray-50 text-gray-900">
+    <slot />
+  </body>
+</html>
+
+<style>
+  html, body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+  }
+</style>
