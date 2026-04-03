@@ -12,46 +12,22 @@ export async function getStaticPaths() {
 
 const herois = await getCollection('herois');
 
-// Função para gerar thumbnail
-function getThumb(url) {
-  if (!url) return '';
-  if (url.startsWith('http')) {
-    return url.includes('?') ? url + '&w=200&h=200&fit=crop' : url + '?w=200&h=200&fit=crop';
-  }
-  return url;
-}
+// Serialize heroes data for client-side JS
+const allHeroes = herois.map(h => ({
+  id: h.id,
+  nome: h.data.nome,
+  titulo: h.data.titulo,
+  periodo: h.data.periodo,
+  foto: h.data.foto,
+  tags: h.data.tags,
+  body: h.body?.substring(0, 100) || ''
+}));
 
-// Embaralhar array (Fisher-Yates shuffle)
-function shuffleArray(array) {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
+const heroisJson = JSON.stringify(allHeroes).replace(/</g, '\\u003c');
 
-const shuffledHerois = shuffleArray(herois);
-
-// Get search query from URL params
-const searchQuery = Astro.url.searchParams.get('q') || '';
-
-// Filter heroes by search query
-const filteredHerois = searchQuery 
-  ? shuffledHerois.filter(heroi => {
-      const nome = heroi.data.nome.toLowerCase();
-      const titulo = heroi.data.titulo.toLowerCase();
-      const tags = heroi.data.tags?.join(' ').toLowerCase() || '';
-      const body = heroi.body?.toLowerCase() || '';
-      const query = searchQuery.toLowerCase();
-      return nome.includes(query) || titulo.includes(query) || tags.includes(query) || body.includes(query);
-    })
-  : shuffledHerois;
-
-const title = searchQuery 
-  ? `Buscar: "${searchQuery}" — Heróis Brasileiros` 
-  : "Heróis Brasileiros — Histórias de Liderança e Coragem";
+const title = "Heróis Brasileiros — Histórias de Liderança e Coragem";
 const description = "Conheça a história dos maiores heróis do Brasil.";
+const itemsPerPage = 6;
 ---
 
 <Layout title={title} description={description}>
@@ -67,10 +43,6 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
             <span class="label">Heróis</span>
           </div>
           <div class="stat">
-            <span class="number">3</span>
-            <span class="label">Seculos</span>
-          </div>
-          <div class="stat">
             <span class="number">∞</span>
             <span class="label">Legado</span>
           </div>
@@ -80,68 +52,29 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   </section>
 
   <main class="container">
-    <div class="intro">
-      {searchQuery && (
-        <div class="search-results">
-          <p>Resultados para "<strong>{searchQuery}</strong>" — {filteredHerois.length} herói{filteredHerois.length !== 1 ? 's' : ''}</p>
-          <a href="/" class="clear-search">← Limpar busca</a>
-        </div>
-      )}
-      <p>Estes brasileiros marcaram a história com suas ações, coragem e contribuições para o desenvolvimento do país.</p>
-    </div>
-
     <!-- Search Bar -->
-    <form class="search-form" action="/" method="get">
+    <form class="search-form" id="search-form">
       <input 
         type="text" 
-        name="q" 
+        id="search-input"
         placeholder="🔍 Buscar heróis por nome, título, tag..." 
-        value={searchQuery}
         class="search-input"
       />
       <button type="submit" class="search-btn">Buscar</button>
+      <button type="button" id="shuffle-btn" class="shuffle-btn" title="Embaralhar">🔀</button>
     </form>
 
-    <div class="heroes-grid">
-      {filteredHerois.map(heroi => (
-        <a href={`/herois/${heroi.id}`} class="hero-card">
-          <div class="card-badge">⭐</div>
-          <div class="card-image">
-            {heroi.data.foto ? (
-              <img src={getThumb(heroi.data.foto)} alt={heroi.data.nome} loading="lazy" />
-            ) : (
-              <div class="image-placeholder">
-                <span>🦸</span>
-              </div>
-            )}
-          </div>
-          <div class="card-content">
-            <h2>{heroi.data.nome}</h2>
-            <p class="subtitle">{heroi.data.titulo}</p>
-            <div class="period-badge">
-              <span>📅</span> {heroi.data.periodo}
-            </div>
-            <p class="excerpt">{heroi.body?.substring(0, 100) || heroi.data.titulo}...</p>
-            <div class="card-footer">
-              <div class="tags">
-                {heroi.data.tags.slice(0, 2).map(tag => (
-                  <span class="tag">{tag}</span>
-                ))}
-              </div>
-              <span class="read-more">Ler mais →</span>
-            </div>
-          </div>
-        </a>
-      ))}
-
-      <div class="hero-card add-new">
-        <div class="add-content">
-          <span class="plus">+</span>
-          <p>Adicionar novo herói</p>
-          <span class="hint">Edite o arquivo Markdown</span>
-        </div>
-      </div>
+    <div class="results-info" id="results-info" style="display: none;">
+      <span id="results-count"></span>
+      <a href="/" class="clear-search">← Limpar</a>
     </div>
+
+    <div class="heroes-grid" id="heroes-grid">
+      <!-- Hero cards will be rendered by JS -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
   </main>
 
   <footer class="footer">
@@ -151,6 +84,144 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
     </div>
   </footer>
 </Layout>
+
+<script define:vars={{ heroisJson, itemsPerPage }}>
+  const heroes = JSON.parse(heroisJson);
+  let currentPage = 1;
+  let filteredHeroes = [...heroes];
+
+  function getThumb(url) {
+    if (!url) return '';
+    if (url.startsWith('http')) {
+      return url.includes('?') ? url + '&w=200&h=200&fit=crop' : url + '?w=200&h=200&fit=crop';
+    }
+    return url;
+  }
+
+  function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  function renderHeroCard(heroi) {
+    const thumb = getThumb(heroi.foto);
+    const tagsHtml = heroi.tags ? heroi.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('') : '';
+    
+    return `
+      <a href="/herois/${heroi.id}" class="hero-card">
+        <div class="card-badge">⭐</div>
+        <div class="card-image">
+          ${heroi.foto ? 
+            `<img src="${thumb}" alt="${heroi.nome}" loading="lazy" />` : 
+            `<div class="image-placeholder"><span>🦸</span></div>`
+          }
+        </div>
+        <div class="card-content">
+          <h2>${heroi.nome}</h2>
+          <p class="subtitle">${heroi.titulo}</p>
+          <div class="period-badge">
+            <span>📅</span> ${heroi.periodo}
+          </div>
+          <p class="excerpt">${heroi.body}...</p>
+          <div class="card-footer">
+            <div class="tags">${tagsHtml}</div>
+            <span class="read-more">Ler mais →</span>
+          </div>
+        </div>
+      </a>
+    `;
+  }
+
+  function renderPage(page) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageHeroes = filteredHeroes.slice(start, end);
+    
+    const grid = document.getElementById('heroes-grid');
+    grid.innerHTML = pageHeroes.map(renderHeroCard).join('');
+    
+    // Render pagination
+    const totalPages = Math.ceil(filteredHeroes.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+    
+    if (totalPages > 1) {
+      let paginationHtml = '';
+      
+      // Previous button
+      if (page > 1) {
+        paginationHtml += `<button class="page-btn" onclick="renderPage(${page - 1})">← Anterior</button>`;
+      }
+      
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === page) {
+          paginationHtml += `<span class="page-current">${i}</span>`;
+        } else {
+          paginationHtml += `<button class="page-btn" onclick="renderPage(${i})">${i}</button>`;
+        }
+      }
+      
+      // Next button
+      if (page < totalPages) {
+        paginationHtml += `<button class="page-btn" onclick="renderPage(${page + 1})">Próxima →</button>`;
+      }
+      
+      pagination.innerHTML = paginationHtml;
+    } else {
+      pagination.innerHTML = '';
+    }
+  }
+
+  function filterHeroes(query) {
+    if (!query) {
+      filteredHeroes = shuffleArray(heroes);
+    } else {
+      const q = query.toLowerCase();
+      filteredHeroes = heroes.filter(heroi => 
+        heroi.nome.toLowerCase().includes(q) ||
+        heroi.titulo.toLowerCase().includes(q) ||
+        (heroi.tags && heroi.tags.some(t => t.toLowerCase().includes(q))) ||
+        heroi.body.toLowerCase().includes(q)
+      );
+    }
+    
+    currentPage = 1;
+    renderPage(currentPage);
+    
+    // Show results info
+    const resultsInfo = document.getElementById('results-info');
+    const resultsCount = document.getElementById('results-count');
+    if (query) {
+      resultsInfo.style.display = 'flex';
+      resultsCount.textContent = `${filteredHeroes.length} herói${filteredHeroes.length !== 1 ? 's' : ''} encontrado${filteredHeroes.length !== 1 ? 's' : ''}`;
+    } else {
+      resultsInfo.style.display = 'none';
+    }
+  }
+
+  // Initial render
+  filteredHeroes = shuffleArray(heroes);
+  renderPage(currentPage);
+
+  // Search form handler
+  document.getElementById('search-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = document.getElementById('search-input').value;
+    filterHeroes(query);
+  });
+
+  // Shuffle button
+  document.getElementById('shuffle-btn').addEventListener('click', () => {
+    filterHeroes(document.getElementById('search-input').value);
+  });
+
+  // Make renderPage globally available
+  window.renderPage = renderPage;
+</script>
 
 <style>
   .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
@@ -180,16 +251,17 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   .header-stats .number { display: block; font-size: 2rem; font-weight: 700; color: #ffcb00; }
   .header-stats .label { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
 
-  .search-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
+  .search-form { display: flex; gap: 1rem; margin-bottom: 1rem; }
   .search-input { flex: 1; padding: 1rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 1rem; font-size: 1rem; transition: border-color 0.2s; }
   .search-input:focus { outline: none; border-color: #302681; }
   .search-btn { background: #302681; color: white; border: none; padding: 1rem 2rem; border-radius: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
   .search-btn:hover { background: #241a5e; }
-  .search-results { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; }
+  .shuffle-btn { background: #009440; color: white; border: none; padding: 1rem; border-radius: 1rem; cursor: pointer; font-size: 1.2rem; }
+  .shuffle-btn:hover { background: #007a33; }
+
+  .results-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; }
   .clear-search { color: #302681; text-decoration: none; font-weight: 600; }
   .clear-search:hover { text-decoration: underline; }
-
-  .intro { text-align: center; margin-bottom: 2rem; color: #4b5563; font-size: 1.1rem; max-width: 600px; margin-left: auto; margin-right: auto; }
 
   .heroes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; padding: 1rem 0 3rem; }
 
@@ -213,12 +285,10 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   .card-footer .tag { background: linear-gradient(135deg, #ffcb00, #e5b800); color: #1a1a4a; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-weight: 600; }
   .read-more { color: #302681; font-size: 0.85rem; font-weight: 600; }
 
-  .hero-card.add-new { border: 3px dashed #d1d5db; background: #f9fafb; min-height: 400px; justify-content: center; align-items: center; cursor: pointer; }
-  .hero-card.add-new:hover { border-color: #ffcb00; background: #fffbeb; }
-  .add-content { text-align: center; color: #9ca3af; }
-  .add-content .plus { font-size: 4rem; display: block; color: #d1d5db; }
-  .add-content p { margin: 0.5rem 0; font-size: 1.1rem; font-weight: 600; }
-  .add-content .hint { font-size: 0.8rem; }
+  .pagination { display: flex; justify-content: center; gap: 0.5rem; padding: 2rem 0; }
+  .page-btn { background: white; color: #302681; border: 2px solid #302681; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .page-btn:hover { background: #302681; color: white; }
+  .page-current { background: #302681; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; }
 
   .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; background: #f9fafb; }
   .footer .sub { font-size: 0.85rem; margin-top: 0.5rem; }
