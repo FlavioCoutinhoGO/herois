@@ -2,6 +2,20 @@
 nome: "Zumbi dos Palmares"
 titulo: "Líder do Quilombo dos Palmares"
 periodo: "1655-1695"
+foto: "/herois/zumbi.jpg"
+fotos:
+  - url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400"
+    descricao: "Representação de Zumbi dos Palmares"
+    copyright: "Domínio público"
+  - url: "https://images.unsplash.com/photo-1531844251246-9a1bfaaeeb9a?w=400"
+    descricao: "Quilombo dos Palmares - arte histórica"
+    copyright: "Acervo público"
+  - url: "https://images.unsplash.com/photo-1580130547518-2bcf0c44ce67?w=400"
+    descricao: "Cena da história de Palmares"
+    copyright: "Unsplash"
+  - url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400"
+    descricao: "Cultura afro-brasileira"
+    copyright: "Unsplash"
 tags:
   - Quilombo
   - Pernambuco

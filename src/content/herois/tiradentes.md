@@ -3,6 +3,19 @@ nome: "Tiradentes"
 titulo: "Herói da Independência do Brasil"
 periodo: "1746-1792"
 foto: "/herois/tiradentes.jpg"
+fotos:
+  - url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400"
+    descricao: "Retrato artístico de Tiradentes"
+    copyright: "Domínio público"
+  - url: "https://images.unsplash.com/photo-1531844251246-9a1bfaaeeb9a?w=400"
+    descricao: "Monumento a Tiradentes em Ouro Preto"
+    copyright: "Acervo público"
+  - url: "https://images.unsplash.com/photo-1580130547518-2bcf0c44ce67?w=400"
+    descricao: "Cenário histórico de Minas Gerais"
+    copyright: "Unsplash"
+  - url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400"
+    descricao: "Arte histórica brasileira"
+    copyright: "Unsplash"
 tags:
   - Independência
   - Minas Gerais
@@ -33,20 +46,16 @@ Hoje, Tiradentes é símbolo da luta pela liberdade e tem seu nome imortalizado 
 
 ### ❌ "Tiradentes era apenas um dentista"
 
-**Falso!** Embora fosse dentistry, Tiradentes era principalmente um ativista político e líder da Inconfidência Mineira. A atividade dentistry era secundária.
+**Falso!** Embora fosse dentista, Tiradentes era principalmente um ativista político e líder da Inconfidência Mineira. A atividade dentistry era secundária.
 
 ### ❌ "Tiradentes era pobre e ignorado"
 
-**Falso!** Tiradentes era membro da elite mineira, com conexões políticas e acesso à educação. Era respected among his peers.
+**Falso!** Tiradentes era membro da elite mineira, com conexões políticas e acesso à educação.
 
-### ✅ "Tiradentes foi executed publicamente em 21 de abril"
+### ✅ "Tiradentes foi executado publicamente em 21 de abril"
 
-**Verdade!** Sua execução na forca em Praça da Lampadosa no Rio de Janeiro transforms him into mártir nacional.
+**Verdade!** Sua execução na forca em Praça da Lampadosa no Rio de Janeiro transformou-o em mártir nacional.
 
 ## Opinião
 
-Tiradentes representa o sonho de um Brasil livre e independente. While outros líderes da Inconfidência foram perdoados, Tiradentes foi sacrificadocomo bode expiatório. Seu legado continua inspirando gerações de brasileiros que lutam por liberdade e justiça social.
-
-## Vídeo
-
-https://www.youtube.com/watch?v=dQw4w9WgXcQ
+Tiradentes representa o sonho de um Brasil livre e independente. Enquanto outros líderes da Inconfidência foram perdoados, Tiradentes foi sacrificado como bode expiatório. Seu legado continua inspirando gerações de brasileiros que lutam por liberdade e justiça social.

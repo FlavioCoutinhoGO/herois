@@ -75,7 +75,7 @@ const description = rawBody?.substring(0, 160) || data.titulo;
             {temFotos ? (
               fotos.map((foto, index) => (
                 <a href={`/herois/${data.nome.toLowerCase().replace(/ /g, '-')}/galeria?img=${index}`} class="gallery-thumb">
-                  <img src={foto} alt={`${data.nome} - ${index + 1}`} />
+                  <img src={foto.url} alt={foto.descricao || `${data.nome} - ${index + 1}`} />
                   <div class="thumb-overlay">
                     <span>🔍</span>
                   </div>
