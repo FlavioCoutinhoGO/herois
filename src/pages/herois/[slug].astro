@@ -108,10 +108,12 @@ const description = rawBody?.substring(0, 160) || data.titulo;
               </>
             )}
           </div>
-          {totalFotos > 0 && (
+          {totalFotos > 0 ? (
             <a href={`/herois/${data.nome.toLowerCase().replace(/ /g, '-')}/galeria`} class="gallery-link">
               Ver galeria completa ({totalFotos} fotos) →
             </a>
+          ) : (
+            <p class="no-photos">Nenhuma foto cadastrada</p>
           )}
         </section>
 
@@ -264,6 +266,7 @@ const description = rawBody?.substring(0, 160) || data.titulo;
   .thumb-overlay span { font-size: 1.5rem; }
   .gallery-link { display: block; text-align: center; color: var(--azul); font-size: 0.85rem; font-weight: 600; text-decoration: none; }
   .gallery-link:hover { color: var(--verde); }
+  .no-photos { text-align: center; color: var(--cinza-400); font-size: 0.8rem; font-style: italic; margin: 0.5rem 0 0; }
 
   .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .tag { background: linear-gradient(135deg, var(--verde), #007a33); color: white; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 2rem; font-weight: 500; text-decoration: none; transition: all 0.2s; }
