@@ -16,20 +16,12 @@ export async function getStaticPaths() {
 const { data } = Astro.props;
 const fotos = data.fotos || [];
 
-const defaultFotos = [
-  { url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800", descricao: "Imagem representativa da história do Brasil", copyright: "Unsplash (livre uso)" },
-  { url: "https://images.unsplash.com/photo-1531844251246-9a1bfaaeeb9a?w=800", descricao: "Cena histórica brasileira", copyright: "Unsplash (livre uso)" },
-  { url: "https://images.unsplash.com/photo-1580130547518-2bcf0c44ce67?w=800", descricao: "Patrimônio cultural brasileiro", copyright: "Unsplash (livre uso)" },
-  { url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800", descricao: "Arte e cultura nacional", copyright: "Unsplash (livre uso)" }
-];
-
-const todasFotos = fotos.length > 0 
-  ? fotos.map((foto) => ({ 
-      url: foto.url || foto, 
-      descricao: foto.descricao || `Foto de ${data.nome}`, 
-      copyright: foto.copyright || "© Acervo pessoal / Domínio público" 
-    }))
-  : defaultFotos;
+// Não usar fotos padrão - mostrar apenas as cadastradas
+const todasFotos = fotos.map((foto) => ({ 
+    url: foto.url || foto, 
+    descricao: foto.descricao || `Foto de ${data.nome}`, 
+    copyright: foto.copyright || "© Acervo pessoal / Domínio público" 
+}));
 
 const title = `Galeria de Fotos — ${data.nome}`;
 const description = `Veja as fotos e imagens de ${data.nome}, ${data.titulo}`;
