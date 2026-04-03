@@ -12,22 +12,14 @@ export async function getStaticPaths() {
 
 const herois = await getCollection('herois');
 
-// Serialize heroes data for client-side JS
-const allHeroes = herois.map(h => ({
-  id: h.id,
-  nome: h.data.nome,
-  titulo: h.data.titulo,
-  periodo: h.data.periodo,
-  foto: h.data.foto,
-  tags: h.data.tags,
-  body: h.body?.substring(0, 100) || ''
-}));
-
-const heroisJson = JSON.stringify(allHeroes).replace(/</g, '\\u003c');
+// Função para thumbnail (para imagens locais, usa caminho direto)
+function getThumb(url) {
+  if (!url) return '';
+  return url;
+}
 
 const title = "Heróis Brasileiros — Histórias de Liderança e Coragem";
 const description = "Conheça a história dos maiores heróis do Brasil.";
-const itemsPerPage = 6;
 ---
 
 <Layout title={title} description={description}>
@@ -54,175 +46,108 @@ const itemsPerPage = 6;
   <main class="container">
     <!-- Search Bar -->
     <form class="search-form" id="search-form">
-      <input 
-        type="text" 
-        id="search-input"
-        placeholder="🔍 Buscar heróis por nome, título, tag..." 
-        class="search-input"
-      />
+      <input type="text" id="search-input" placeholder="🔍 Buscar heróis..." class="search-input" />
       <button type="submit" class="search-btn">Buscar</button>
-      <button type="button" id="shuffle-btn" class="shuffle-btn" title="Embaralhar">🔀</button>
     </form>
 
-    <div class="results-info" id="results-info" style="display: none;">
+    <div class="results-info" id="results-info" style="display:none">
       <span id="results-count"></span>
       <a href="/" class="clear-search">← Limpar</a>
     </div>
 
     <div class="heroes-grid" id="heroes-grid">
-      <!-- Hero cards will be rendered by JS -->
+      {herois.map(heroi => (
+        <a href={`/herois/${heroi.id}`} class="hero-card">
+          <div class="card-badge">⭐</div>
+          <div class="card-image">
+            {heroi.data.foto ? (
+              <img src={getThumb(heroi.data.foto)} alt={heroi.data.nome} loading="lazy" />
+            ) : (
+              <div class="image-placeholder"><span>🦸</span></div>
+            )}
+          </div>
+          <div class="card-content">
+            <h2>{heroi.data.nome}</h2>
+            <p class="subtitle">{heroi.data.titulo}</p>
+            <div class="period-badge"><span>📅</span> {heroi.data.periodo}</div>
+            <p class="excerpt">{heroi.body?.substring(0, 80) || heroi.data.titulo}...</p>
+            <div class="card-footer">
+              <div class="tags">
+                {heroi.data.tags?.slice(0, 2).map(tag => (
+                  <span class="tag">{tag}</span>
+                ))}
+              </div>
+              <span class="read-more">Ler mais →</span>
+            </div>
+          </div>
+        </a>
+      ))}
     </div>
-
-    <!-- Pagination -->
-    <div class="pagination" id="pagination"></div>
   </main>
 
   <footer class="footer">
     <div class="container">
       <p>🇧🇷 Heróis Brasileiros — Celebrando quem fez história</p>
-      <p class="sub">Feito com 🇧🇷 e Astro</p>
     </div>
   </footer>
 </Layout>
 
-<script define:vars={{ heroisJson, itemsPerPage }}>
-  const heroes = JSON.parse(heroisJson);
+<script>
+  // Client-side search and pagination
+  const heroes = Array.from(document.querySelectorAll('.hero-card'));
+  const itemsPerPage = 6;
   let currentPage = 1;
-  let filteredHeroes = [...heroes];
 
-  function getThumb(url) {
-    if (!url) return '';
-    // For external URLs, add thumbnail params
-    if (url.startsWith('http')) {
-      return url.includes('?') ? url + '&w=200&h=200&fit=crop' : url + '?w=200&h=200&fit=crop';
-    }
-    // For local images, use direct path
-    return url;
-  }
-
-  function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }
-
-  function renderHeroCard(heroi) {
-    const thumb = getThumb(heroi.foto);
-    const tagsHtml = heroi.tags ? heroi.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('') : '';
-    
-    return `
-      <a href="/herois/${heroi.id}" class="hero-card">
-        <div class="card-badge">⭐</div>
-        <div class="card-image">
-          ${heroi.foto ? 
-            `<img src="${thumb}" alt="${heroi.nome}" loading="lazy" />` : 
-            `<div class="image-placeholder"><span>🦸</span></div>`
-          }
-        </div>
-        <div class="card-content">
-          <h2>${heroi.nome}</h2>
-          <p class="subtitle">${heroi.titulo}</p>
-          <div class="period-badge">
-            <span>📅</span> ${heroi.periodo}
-          </div>
-          <p class="excerpt">${heroi.body}...</p>
-          <div class="card-footer">
-            <div class="tags">${tagsHtml}</div>
-            <span class="read-more">Ler mais →</span>
-          </div>
-        </div>
-      </a>
-    `;
-  }
-
-  function renderPage(page) {
+  function showPage(page) {
+    currentPage = page;
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    const pageHeroes = filteredHeroes.slice(start, end);
     
-    const grid = document.getElementById('heroes-grid');
-    grid.innerHTML = pageHeroes.map(renderHeroCard).join('');
-    
-    // Render pagination
-    const totalPages = Math.ceil(filteredHeroes.length / itemsPerPage);
-    const pagination = document.getElementById('pagination');
-    
-    if (totalPages > 1) {
-      let paginationHtml = '';
-      
-      // Previous button
-      if (page > 1) {
-        paginationHtml += `<button class="page-btn" onclick="renderPage(${page - 1})">← Anterior</button>`;
-      }
-      
-      // Page numbers
-      for (let i = 1; i <= totalPages; i++) {
-        if (i === page) {
-          paginationHtml += `<span class="page-current">${i}</span>`;
-        } else {
-          paginationHtml += `<button class="page-btn" onclick="renderPage(${i})">${i}</button>`;
-        }
-      }
-      
-      // Next button
-      if (page < totalPages) {
-        paginationHtml += `<button class="page-btn" onclick="renderPage(${page + 1})">Próxima →</button>`;
-      }
-      
-      pagination.innerHTML = paginationHtml;
-    } else {
-      pagination.innerHTML = '';
-    }
+    heroes.forEach((card, index) => {
+      card.style.display = (index >= start && index < end) ? 'flex' : 'none';
+    });
   }
 
-  function filterHeroes(query) {
-    if (!query) {
-      filteredHeroes = shuffleArray(heroes);
-    } else {
-      const q = query.toLowerCase();
-      filteredHeroes = heroes.filter(heroi => 
-        heroi.nome.toLowerCase().includes(q) ||
-        heroi.titulo.toLowerCase().includes(q) ||
-        (heroi.tags && heroi.tags.some(t => t.toLowerCase().includes(q))) ||
-        heroi.body.toLowerCase().includes(q)
-      );
-    }
+  function setupPagination(total) {
+    const totalPages = Math.ceil(total / itemsPerPage);
+    if (totalPages <= 1) return;
     
-    currentPage = 1;
-    renderPage(currentPage);
+    // Hide all initially
+    heroes.forEach((card, index) => {
+      card.style.display = index < itemsPerPage ? 'flex' : 'none';
+    });
+  }
+
+  // Initial setup
+  setupPagination(heroes.length);
+
+  // Search functionality
+  const searchForm = document.getElementById('search-form');
+  const searchInput = document.getElementById('search-input');
+  
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = searchInput.value.toLowerCase();
+    
+    heroes.forEach(card => {
+      const name = card.querySelector('h2').textContent.toLowerCase();
+      const subtitle = card.querySelector('.subtitle').textContent.toLowerCase();
+      const tags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.toLowerCase()).join(' ');
+      
+      const match = name.includes(query) || subtitle.includes(query) || tags.includes(query);
+      card.style.display = match ? 'flex' : 'none';
+    });
     
     // Show results info
     const resultsInfo = document.getElementById('results-info');
-    const resultsCount = document.getElementById('results-count');
+    const visibleCount = heroes.filter(c => c.style.display !== 'none').length;
     if (query) {
       resultsInfo.style.display = 'flex';
-      resultsCount.textContent = `${filteredHeroes.length} herói${filteredHeroes.length !== 1 ? 's' : ''} encontrado${filteredHeroes.length !== 1 ? 's' : ''}`;
+      document.getElementById('results-count').textContent = `${visibleCount} herói${visibleCount !== 1 ? 's' : ''}`;
     } else {
       resultsInfo.style.display = 'none';
     }
-  }
-
-  // Initial render
-  filteredHeroes = shuffleArray(heroes);
-  renderPage(currentPage);
-
-  // Search form handler
-  document.getElementById('search-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const query = document.getElementById('search-input').value;
-    filterHeroes(query);
   });
-
-  // Shuffle button
-  document.getElementById('shuffle-btn').addEventListener('click', () => {
-    filterHeroes(document.getElementById('search-input').value);
-  });
-
-  // Make renderPage globally available
-  window.renderPage = renderPage;
 </script>
 
 <style>
@@ -230,7 +155,6 @@ const itemsPerPage = 6;
 
   .hero-header {
     background: linear-gradient(135deg, #302681 0%, #1a1a4a 50%, #302681 100%);
-    background-image: radial-gradient(ellipse at 30% 70%, rgba(0, 148, 64, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 30%, rgba(255, 203, 0, 0.2) 0%, transparent 50%), linear-gradient(135deg, #302681 0%, #1a1a4a 100%);
     padding: 4rem 0;
     color: white;
     position: relative;
@@ -245,29 +169,25 @@ const itemsPerPage = 6;
   }
 
   .header-content { position: relative; text-align: center; }
-  .header-content h1 { margin: 0 0 0.5rem; font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+  .header-content h1 { margin: 0 0 0.5rem; font-size: 3rem; }
   .header-content p { margin: 0 0 2rem; color: rgba(255,255,255,0.85); font-size: 1.25rem; }
 
   .header-stats { display: flex; justify-content: center; gap: 3rem; }
-  .header-stats .stat { text-align: center; }
   .header-stats .number { display: block; font-size: 2rem; font-weight: 700; color: #ffcb00; }
   .header-stats .label { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
 
-  .search-form { display: flex; gap: 1rem; margin-bottom: 1rem; }
-  .search-input { flex: 1; padding: 1rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 1rem; font-size: 1rem; transition: border-color 0.2s; }
+  .search-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
+  .search-input { flex: 1; padding: 1rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 1rem; font-size: 1rem; }
   .search-input:focus { outline: none; border-color: #302681; }
-  .search-btn { background: #302681; color: white; border: none; padding: 1rem 2rem; border-radius: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .search-btn { background: #302681; color: white; border: none; padding: 1rem 2rem; border-radius: 1rem; font-weight: 600; cursor: pointer; }
   .search-btn:hover { background: #241a5e; }
-  .shuffle-btn { background: #009440; color: white; border: none; padding: 1rem; border-radius: 1rem; cursor: pointer; font-size: 1.2rem; }
-  .shuffle-btn:hover { background: #007a33; }
 
-  .results-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; }
+  .results-info { display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; }
   .clear-search { color: #302681; text-decoration: none; font-weight: 600; }
-  .clear-search:hover { text-decoration: underline; }
 
   .heroes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; padding: 1rem 0 3rem; }
 
-  .hero-card { background: white; border-radius: 1.5rem; overflow: hidden; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; display: flex; flex-direction: column; }
+  .hero-card { background: white; border-radius: 1.5rem; overflow: hidden; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.4s; position: relative; display: flex; flex-direction: column; }
   .hero-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(48, 38, 129, 0.15); }
 
   .card-badge { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; z-index: 1; }
@@ -287,11 +207,5 @@ const itemsPerPage = 6;
   .card-footer .tag { background: linear-gradient(135deg, #ffcb00, #e5b800); color: #1a1a4a; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-weight: 600; }
   .read-more { color: #302681; font-size: 0.85rem; font-weight: 600; }
 
-  .pagination { display: flex; justify-content: center; gap: 0.5rem; padding: 2rem 0; }
-  .page-btn { background: white; color: #302681; border: 2px solid #302681; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-  .page-btn:hover { background: #302681; color: white; }
-  .page-current { background: #302681; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; }
-
   .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; background: #f9fafb; }
-  .footer .sub { font-size: 0.85rem; margin-top: 0.5rem; }
 </style>
