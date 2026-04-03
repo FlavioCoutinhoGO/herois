@@ -18,12 +18,40 @@ function getThumb(url) {
   if (url.startsWith('http')) {
     return url.includes('?') ? url + '&w=200&h=200&fit=crop' : url + '?w=200&h=200&fit=crop';
   }
-  // Para imagens locais, retorna o caminho diretamente (Astro não otimiza automaticamente noSSG)
   return url;
 }
 
-const title = "Heróis Brasileiros — Histórias de Liderança e Coragem";
-const description = "Conheça a história dos maiores heróis do Brasil. Tiradentes, Zumbi dos Palmares, Santos Dumont e muito mais.";
+// Embaralhar array (Fisher-Yates shuffle)
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+const shuffledHerois = shuffleArray(herois);
+
+// Get search query from URL params
+const searchQuery = Astro.url.searchParams.get('q') || '';
+
+// Filter heroes by search query
+const filteredHerois = searchQuery 
+  ? shuffledHerois.filter(heroi => {
+      const nome = heroi.data.nome.toLowerCase();
+      const titulo = heroi.data.titulo.toLowerCase();
+      const tags = heroi.data.tags?.join(' ').toLowerCase() || '';
+      const body = heroi.body?.toLowerCase() || '';
+      const query = searchQuery.toLowerCase();
+      return nome.includes(query) || titulo.includes(query) || tags.includes(query) || body.includes(query);
+    })
+  : shuffledHerois;
+
+const title = searchQuery 
+  ? `Buscar: "${searchQuery}" — Heróis Brasileiros` 
+  : "Heróis Brasileiros — Histórias de Liderança e Coragem";
+const description = "Conheça a história dos maiores heróis do Brasil.";
 ---
 
 <Layout title={title} description={description}>
@@ -53,11 +81,29 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
 
   <main class="container">
     <div class="intro">
+      {searchQuery && (
+        <div class="search-results">
+          <p>Resultados para "<strong>{searchQuery}</strong>" — {filteredHerois.length} herói{filteredHerois.length !== 1 ? 's' : ''}</p>
+          <a href="/" class="clear-search">← Limpar busca</a>
+        </div>
+      )}
       <p>Estes brasileiros marcaram a história com suas ações, coragem e contribuições para o desenvolvimento do país.</p>
     </div>
 
+    <!-- Search Bar -->
+    <form class="search-form" action="/" method="get">
+      <input 
+        type="text" 
+        name="q" 
+        placeholder="🔍 Buscar heróis por nome, título, tag..." 
+        value={searchQuery}
+        class="search-input"
+      />
+      <button type="submit" class="search-btn">Buscar</button>
+    </form>
+
     <div class="heroes-grid">
-      {herois.map(heroi => (
+      {filteredHerois.map(heroi => (
         <a href={`/herois/${heroi.id}`} class="hero-card">
           <div class="card-badge">⭐</div>
           <div class="card-image">
@@ -133,6 +179,15 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
   .header-stats .stat { text-align: center; }
   .header-stats .number { display: block; font-size: 2rem; font-weight: 700; color: #ffcb00; }
   .header-stats .label { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
+
+  .search-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
+  .search-input { flex: 1; padding: 1rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 1rem; font-size: 1rem; transition: border-color 0.2s; }
+  .search-input:focus { outline: none; border-color: #302681; }
+  .search-btn { background: #302681; color: white; border: none; padding: 1rem 2rem; border-radius: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .search-btn:hover { background: #241a5e; }
+  .search-results { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; }
+  .clear-search { color: #302681; text-decoration: none; font-weight: 600; }
+  .clear-search:hover { text-decoration: underline; }
 
   .intro { text-align: center; margin-bottom: 2rem; color: #4b5563; font-size: 1.1rem; max-width: 600px; margin-left: auto; margin-right: auto; }
 
