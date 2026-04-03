@@ -2,37 +2,24 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
-export async function getStaticPaths() {
-  const herois = await getCollection('herois');
-  
-  if (!herois || herois.length === 0) {
-    return [{
-      params: {},
-      props: { tags: [] }
-    }];
-  }
-  
-  // Collect all unique tags
-  const allTags = new Map();
+const herois = await getCollection('herois');
+
+// Collect all unique tags
+const allTags = new Map();
+if (herois && herois.length > 0) {
   herois.forEach(heroi => {
-    heroi.data.tags?.forEach(tag => {
-      if (!allTags.has(tag)) {
-        allTags.set(tag, { name: tag, count: 0 });
-      }
-      allTags.get(tag).count++;
-    });
+    if (heroi.data.tags) {
+      heroi.data.tags.forEach(tag => {
+        if (!allTags.has(tag)) {
+          allTags.set(tag, { name: tag, count: 0 });
+        }
+        allTags.get(tag).count++;
+      });
+    }
   });
-  
-  // Convert to array and sort by count
-  const sortedTags = Array.from(allTags.values()).sort((a, b) => b.count - a.count);
-  
-  return [{
-    params: {},
-    props: { tags: sortedTags }
-  }];
 }
 
-const { tags = [] } = Astro.props;
+const tags = Array.from(allTags.values()).sort((a, b) => b.count - a.count);
 
 const title = "Todas as Tags — Heróis Brasileiros";
 const description = "Explore os heróis brasileiros por tags: Independência, Quilombo, Aviação, etc.";
@@ -42,19 +29,23 @@ const description = "Explore os heróis brasileiros por tags: Independência, Qu
   <section class="tags-header">
     <div class="container">
       <h1>🏷️ Todas as Tags</h1>
-      <p class="subtitle">Explore heróis por categoria</p>
+      <p class="subtitle">Explore heróis por categoria ({tags.length} tags)</p>
     </div>
   </section>
 
   <main class="container">
-    <div class="tags-grid">
-      {tags.map(tag => (
-        <a href={`/tags/${tag.name.toLowerCase().replace(/ /g, '-')}`} class="tag-card">
-          <span class="tag-name">{tag.name}</span>
-          <span class="tag-count">{tag.count} herói{tag.count > 1 ? 's' : ''}</span>
-        </a>
-      ))}
-    </div>
+    {tags.length > 0 ? (
+      <div class="tags-grid">
+        {tags.map(tag => (
+          <a href={`/tags/${tag.name.toLowerCase().replace(/ /g, '-')}`} class="tag-card">
+            <span class="tag-name">{tag.name}</span>
+            <span class="tag-count">{tag.count} herói{tag.count > 1 ? 's' : ''}</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="no-tags">Nenhuma tag encontrada</p>
+    )}
   </main>
 
   <footer class="footer">
@@ -114,6 +105,13 @@ const description = "Explore os heróis brasileiros por tags: Independência, Qu
     color: #6b7280;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+  }
+
+  .no-tags {
+    text-align: center;
+    color: #6b7280;
+    font-size: 1.1rem;
+    padding: 2rem;
   }
 
   .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; margin-top: 2rem; }
