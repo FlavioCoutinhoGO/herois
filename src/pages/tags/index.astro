@@ -1,0 +1,120 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const herois = await getCollection('herois');
+  
+  if (!herois || herois.length === 0) {
+    return [{
+      params: {},
+      props: { tags: [] }
+    }];
+  }
+  
+  // Collect all unique tags
+  const allTags = new Map();
+  herois.forEach(heroi => {
+    heroi.data.tags?.forEach(tag => {
+      if (!allTags.has(tag)) {
+        allTags.set(tag, { name: tag, count: 0 });
+      }
+      allTags.get(tag).count++;
+    });
+  });
+  
+  // Convert to array and sort by count
+  const sortedTags = Array.from(allTags.values()).sort((a, b) => b.count - a.count);
+  
+  return [{
+    params: {},
+    props: { tags: sortedTags }
+  }];
+}
+
+const { tags = [] } = Astro.props;
+
+const title = "Todas as Tags — Heróis Brasileiros";
+const description = "Explore os heróis brasileiros por tags: Independência, Quilombo, Aviação, etc.";
+---
+
+<Layout title={title} description={description}>
+  <section class="tags-header">
+    <div class="container">
+      <h1>🏷️ Todas as Tags</h1>
+      <p class="subtitle">Explore heróis por categoria</p>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="tags-grid">
+      {tags.map(tag => (
+        <a href={`/tags/${tag.name.toLowerCase().replace(/ /g, '-')}`} class="tag-card">
+          <span class="tag-name">{tag.name}</span>
+          <span class="tag-count">{tag.count} herói{tag.count > 1 ? 's' : ''}</span>
+        </a>
+      ))}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>🇧🇷 Heróis Brasileiros — Celebrando quem fez história</p>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
+
+  .tags-header {
+    background: linear-gradient(135deg, #302681 0%, #1a1a4a 100%);
+    padding: 3rem 0;
+    color: white;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .tags-header h1 { margin: 0 0 0.5rem; font-size: 2.5rem; }
+  .tags-header .subtitle { margin: 0; color: #ffcb00; font-size: 1.1rem; }
+
+  .tags-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .tag-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-radius: 1rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    min-width: 140px;
+  }
+
+  .tag-card:hover {
+    border-color: #ffcb00;
+    transform: translateY(-4px);
+  }
+
+  .tag-name {
+    color: #302681;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .tag-count {
+    color: #6b7280;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+
+  .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; margin-top: 2rem; }
+</style>

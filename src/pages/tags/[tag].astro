@@ -1,0 +1,117 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const herois = await getCollection('herois');
+  
+  if (!herois || herois.length === 0) {
+    return [];
+  }
+  
+  // Collect all unique tags
+  const allTags = new Map();
+  herois.forEach(heroi => {
+    heroi.data.tags?.forEach(tag => {
+      if (!allTags.has(tag)) {
+        allTags.set(tag, { name: tag, count: 0, heroes: [] });
+      }
+      const tagData = allTags.get(tag);
+      tagData.count++;
+      tagData.heroes.push({ nome: heroi.data.nome, slug: heroi.id, titulo: heroi.data.titulo });
+    });
+  });
+  
+  // Convert to array and sort by count
+  const sortedTags = Array.from(allTags.values()).sort((a, b) => b.count - a.count);
+  
+  return sortedTags.map(tag => ({
+    params: { tag: tag.name.toLowerCase().replace(/ /g, '-') },
+    props: { tag }
+  }));
+}
+
+const { tag } = Astro.props;
+
+const title = `Tag: ${tag.name} — Heróis Brasileiros`;
+const description = `Veja os ${tag.count} heróis brasileiros com a tag "${tag.name}"`;
+---
+
+<Layout title={title} description={description}>
+  <section class="tag-header">
+    <div class="container">
+      <a href="/tags" class="back-link">← Todas as Tags</a>
+      <h1>🏷️ {tag.name}</h1>
+      <p class="subtitle">{tag.count} herói{tag.count > 1 ? 's' : ''} com esta tag</p>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="heroes-grid">
+      {tag.heroes.map(heroi => (
+        <a href={`/herois/${heroi.slug}`} class="hero-card">
+          <div class="card-icon">🦸</div>
+          <div class="card-content">
+            <h2>{heroi.nome}</h2>
+            <p>{heroi.titulo}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>🇧🇷 Heróis Brasileiros — Celebrando quem fez história</p>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
+
+  .tag-header {
+    background: linear-gradient(135deg, #302681 0%, #1a1a4a 100%);
+    padding: 3rem 0;
+    color: white;
+    margin-bottom: 2rem;
+  }
+
+  .back-link { color: #ffcb00; text-decoration: none; font-size: 0.95rem; }
+  .back-link:hover { color: white; }
+
+  .tag-header h1 { margin: 1rem 0 0.5rem; font-size: 2.5rem; }
+  .tag-header .subtitle { margin: 0; color: #ffcb00; font-size: 1.1rem; }
+
+  .heroes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .hero-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+  }
+
+  .hero-card:hover {
+    border-color: #ffcb00;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  .card-icon { font-size: 2.5rem; }
+  .card-content h2 { margin: 0; color: #302681; font-size: 1.1rem; }
+  .card-content p { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.85rem; }
+
+  .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; margin-top: 2rem; }
+</style>
