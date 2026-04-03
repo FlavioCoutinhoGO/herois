@@ -12,12 +12,21 @@ export async function getStaticPaths() {
 
 const herois = await getCollection('herois');
 
+// Função para gerar thumbnail
+function getThumb(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) {
+    return url.includes('?') ? url + '&w=200&h=200&fit=crop' : url + '?w=200&h=200&fit=crop';
+  }
+  // Para imagens locais, retorna o caminho diretamente (Astro não otimiza automaticamente noSSG)
+  return url;
+}
+
 const title = "Heróis Brasileiros — Histórias de Liderança e Coragem";
 const description = "Conheça a história dos maiores heróis do Brasil. Tiradentes, Zumbi dos Palmares, Santos Dumont e muito mais.";
 ---
 
 <Layout title={title} description={description}>
-  <!-- Hero Header -->
   <section class="hero-header">
     <div class="header-bg"></div>
     <div class="container">
@@ -43,19 +52,17 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
   </section>
 
   <main class="container">
-    <!-- Intro -->
     <div class="intro">
-      <p>Estos brasileiros marcaram a história com suas ações, coragem e contribuições para o desenvolvimento do país.</p>
+      <p>Estes brasileiros marcaram a história com suas ações, coragem e contribuições para o desenvolvimento do país.</p>
     </div>
 
-    <!-- Heroes Grid -->
     <div class="heroes-grid">
       {herois.map(heroi => (
         <a href={`/herois/${heroi.id}`} class="hero-card">
           <div class="card-badge">⭐</div>
           <div class="card-image">
             {heroi.data.foto ? (
-              <img src={heroi.data.foto} alt={heroi.data.nome} />
+              <img src={getThumb(heroi.data.foto)} alt={heroi.data.nome} loading="lazy" />
             ) : (
               <div class="image-placeholder">
                 <span>🦸</span>
@@ -81,7 +88,6 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
         </a>
       ))}
 
-      <!-- Card Adicionar Novo (visual) -->
       <div class="hero-card add-new">
         <div class="add-content">
           <span class="plus">+</span>
@@ -92,7 +98,6 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <p>🇧🇷 Heróis Brasileiros — Celebrando quem fez história</p>
@@ -104,13 +109,9 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
 <style>
   .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
 
-  /* Hero Header */
   .hero-header {
-    background: linear-gradient(135deg, var(--azul) 0%, #1a1a4a 50%, var(--azul) 100%);
-    background-image: 
-      radial-gradient(ellipse at 30% 70%, rgba(0, 148, 64, 0.2) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 30%, rgba(255, 203, 0, 0.2) 0%, transparent 50%),
-      linear-gradient(135deg, var(--azul) 0%, #1a1a4a 100%);
+    background: linear-gradient(135deg, #302681 0%, #1a1a4a 50%, #302681 100%);
+    background-image: radial-gradient(ellipse at 30% 70%, rgba(0, 148, 64, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 30%, rgba(255, 203, 0, 0.2) 0%, transparent 50%), linear-gradient(135deg, #302681 0%, #1a1a4a 100%);
     padding: 4rem 0;
     color: white;
     position: relative;
@@ -125,226 +126,45 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
   }
 
   .header-content { position: relative; text-align: center; }
+  .header-content h1 { margin: 0 0 0.5rem; font-size: 3rem; text-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+  .header-content p { margin: 0 0 2rem; color: rgba(255,255,255,0.85); font-size: 1.25rem; }
 
-  .header-content h1 {
-    margin: 0 0 0.5rem;
-    font-size: 3rem;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-  }
+  .header-stats { display: flex; justify-content: center; gap: 3rem; }
+  .header-stats .stat { text-align: center; }
+  .header-stats .number { display: block; font-size: 2rem; font-weight: 700; color: #ffcb00; }
+  .header-stats .label { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
 
-  .header-content p {
-    margin: 0 0 2rem;
-    color: rgba(255,255,255,0.85);
-    font-size: 1.25rem;
-  }
+  .intro { text-align: center; margin-bottom: 2rem; color: #4b5563; font-size: 1.1rem; max-width: 600px; margin-left: auto; margin-right: auto; }
 
-  .header-stats {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-  }
+  .heroes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; padding: 1rem 0 3rem; }
 
-  .header-stats .stat {
-    text-align: center;
-  }
+  .hero-card { background: white; border-radius: 1.5rem; overflow: hidden; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; display: flex; flex-direction: column; }
+  .hero-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(48, 38, 129, 0.15); }
 
-  .header-stats .number {
-    display: block;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--amarelo);
-  }
+  .card-badge { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; z-index: 1; }
+  .card-image { height: 160px; background: linear-gradient(135deg, #302681, #009440); display: flex; align-items: center; justify-content: center; }
+  .card-image img { width: 100%; height: 100%; object-fit: cover; }
+  .card-image .image-placeholder { font-size: 5rem; }
 
-  .header-stats .label {
-    font-size: 0.875rem;
-    color: rgba(255,255,255,0.7);
-  }
+  .card-content { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+  .card-content h2 { margin: 0; color: #302681; font-size: 1.5rem; }
+  .card-content .subtitle { margin: 0.25rem 0 0.5rem; color: #009440; font-weight: 500; font-size: 0.95rem; }
 
-  /* Intro */
-  .intro {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: var(--cinza-600);
-    font-size: 1.1rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  .period-badge { display: inline-flex; align-items: center; gap: 0.25rem; background: #f3f4f6; color: #4b5563; font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 1rem; width: fit-content; margin-bottom: 0.75rem; }
+  .card-content .excerpt { margin: 0 0 1rem; color: #4b5563; font-size: 0.9rem; line-height: 1.5; flex: 1; }
 
-  /* Heroes Grid */
-  .heroes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 2rem;
-    padding: 1rem 0 3rem;
-  }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+  .card-footer .tags { display: flex; gap: 0.4rem; }
+  .card-footer .tag { background: linear-gradient(135deg, #ffcb00, #e5b800); color: #1a1a4a; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-weight: 600; }
+  .read-more { color: #302681; font-size: 0.85rem; font-weight: 600; }
 
-  .hero-card {
-    background: white;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    text-decoration: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
+  .hero-card.add-new { border: 3px dashed #d1d5db; background: #f9fafb; min-height: 400px; justify-content: center; align-items: center; cursor: pointer; }
+  .hero-card.add-new:hover { border-color: #ffcb00; background: #fffbeb; }
+  .add-content { text-align: center; color: #9ca3af; }
+  .add-content .plus { font-size: 4rem; display: block; color: #d1d5db; }
+  .add-content p { margin: 0.5rem 0; font-size: 1.1rem; font-weight: 600; }
+  .add-content .hint { font-size: 0.8rem; }
 
-  .hero-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(48, 38, 129, 0.15);
-  }
-
-  .card-badge {
-    position: absolute;
-    top: 1rem; right: 1rem;
-    font-size: 1.5rem;
-    z-index: 1;
-  }
-
-  .card-image {
-    height: 160px;
-    background: linear-gradient(135deg, var(--azul), var(--verde));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .card-image .image-placeholder {
-    font-size: 5rem;
-  }
-
-  .card-content {
-    padding: 1.5rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-content h2 {
-    margin: 0;
-    color: var(--azul);
-    font-size: 1.5rem;
-  }
-
-  .card-content .subtitle {
-    margin: 0.25rem 0 0.5rem;
-    color: var(--verde);
-    font-weight: 500;
-    font-size: 0.95rem;
-  }
-
-  .period-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    background: var(--cinza-100);
-    color: var(--cinza-600);
-    font-size: 0.8rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    width: fit-content;
-    margin-bottom: 0.75rem;
-  }
-
-  .card-content .excerpt {
-    margin: 0 0 1rem;
-    color: var(--cinza-600);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    flex: 1;
-  }
-
-  .card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid var(--cinza-100);
-  }
-
-  .card-footer .tags {
-    display: flex;
-    gap: 0.4rem;
-  }
-
-  .card-footer .tag {
-    background: linear-gradient(135deg, var(--amarelo), #e5b800);
-    color: #1a1a4a;
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.25rem;
-    font-weight: 600;
-  }
-
-  .read-more {
-    color: var(--azul);
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
-  /* Card Adicionar */
-  .hero-card.add-new {
-    border: 3px dashed var(--cinza-300);
-    background: var(--cinza-50);
-    min-height: 400px;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .hero-card.add-new:hover {
-    border-color: var(--amarelo);
-    background: #fffbeb;
-  }
-
-  .add-content {
-    text-align: center;
-    color: var(--cinza-400);
-  }
-
-  .add-content .plus {
-    font-size: 4rem;
-    display: block;
-    color: var(--cinza-300);
-  }
-
-  .add-content p {
-    margin: 0.5rem 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  .add-content .hint {
-    font-size: 0.8rem;
-  }
-
-  /* Footer */
-  .footer {
-    text-align: center;
-    padding: 2rem 0;
-    color: var(--cinza-400);
-    border-top: 2px solid var(--amarelo);
-    background: var(--cinza-50);
-  }
-
-  .footer .sub {
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-  }
-
-  /* Cores como variáveis */
-  :root {
-    --verde: #009440;
-    --amarelo: #ffcb00;
-    --azul: #302681;
-    --branco: #FFFFFF;
-    --cinza-50: #f9fafb;
-    --cinza-100: #f3f4f6;
-    --cinza-300: #d1d5db;
-    --cinza-400: #9ca3af;
-    --cinza-600: #4b5563;
-  }
+  .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; background: #f9fafb; }
+  .footer .sub { font-size: 0.85rem; margin-top: 0.5rem; }
 </style>
