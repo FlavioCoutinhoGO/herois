@@ -18,7 +18,7 @@ export async function getStaticPaths() {
       }
       const tagData = allTags.get(tag);
       tagData.count++;
-      tagData.heroes.push({ nome: heroi.data.nome, slug: heroi.id, titulo: heroi.data.titulo });
+      tagData.heroes.push({ nome: heroi.data.nome, slug: heroi.id, titulo: heroi.data.titulo, foto: heroi.data.foto });
     });
   });
   
@@ -50,7 +50,13 @@ const description = `Veja os ${tag.count} heróis brasileiros com a tag "${tag.n
     <div class="heroes-grid">
       {tag.heroes.map(heroi => (
         <a href={`/herois/${heroi.slug}`} class="hero-card">
-          <div class="card-icon">🦸</div>
+          <div class="card-image">
+            {heroi.foto ? (
+              <img src={heroi.foto} alt={heroi.nome} />
+            ) : (
+              <div class="card-icon">🦸</div>
+            )}
+          </div>
           <div class="card-content">
             <h2>{heroi.nome}</h2>
             <p>{heroi.titulo}</p>
@@ -109,7 +115,9 @@ const description = `Veja os ${tag.count} heróis brasileiros com a tag "${tag.n
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
   }
 
-  .card-icon { font-size: 2.5rem; }
+  .card-image { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #302681, #009440); }
+  .card-image img { width: 100%; height: 100%; object-fit: cover; }
+  .card-icon { font-size: 1.8rem; }
   .card-content h2 { margin: 0; color: #302681; font-size: 1.1rem; }
   .card-content p { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.85rem; }
 

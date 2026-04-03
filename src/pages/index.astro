@@ -54,9 +54,13 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
         <a href={`/herois/${heroi.id}`} class="hero-card">
           <div class="card-badge">⭐</div>
           <div class="card-image">
-            <div class="image-placeholder">
-              <span>🦸</span>
-            </div>
+            {heroi.data.foto ? (
+              <img src={heroi.data.foto} alt={heroi.data.nome} />
+            ) : (
+              <div class="image-placeholder">
+                <span>🦸</span>
+              </div>
+            )}
           </div>
           <div class="card-content">
             <h2>{heroi.data.nome}</h2>
