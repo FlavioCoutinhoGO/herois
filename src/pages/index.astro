@@ -92,9 +92,11 @@ const itemsPerPage = 6;
 
   function getThumb(url) {
     if (!url) return '';
+    // For external URLs, add thumbnail params
     if (url.startsWith('http')) {
       return url.includes('?') ? url + '&w=200&h=200&fit=crop' : url + '?w=200&h=200&fit=crop';
     }
+    // For local images, use direct path
     return url;
   }
 
