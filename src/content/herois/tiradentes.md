@@ -3,6 +3,10 @@ nome: "Tiradentes"
 titulo: "Herói da Independência do Brasil"
 periodo: "1746-1792"
 foto: "/herois/tiradentes/tiradentes.jpg"
+fotos:
+  - url: "/herois/tiradentes/tiradentes.jpg"
+    descricao: "Retrato de Tiradentes - Herói da Inconfidência Mineira"
+    copyright: "Foto enviada pelo usuário"
 tags:
   - Independência
   - Minas Gerais
