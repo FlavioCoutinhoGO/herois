@@ -84,6 +84,13 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
         </a>
       ))}
     </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination" style="display:none">
+      <button id="prev-btn" class="page-btn">← Anterior</button>
+      <div id="page-numbers"></div>
+      <button id="next-btn" class="page-btn">Próxima →</button>
+    </div>
   </main>
 
   <footer class="footer">
@@ -107,20 +114,65 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
     heroes.forEach((card, index) => {
       card.style.display = (index >= start && index < end) ? 'flex' : 'none';
     });
+    
+    updatePaginationButtons();
   }
 
-  function setupPagination(total) {
+  function updatePaginationButtons() {
+    const total = heroes.filter(c => c.style.display !== 'none').length;
     const totalPages = Math.ceil(total / itemsPerPage);
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const pagination = document.getElementById('pagination');
+    const pageNumbers = document.getElementById('page-numbers');
+    
+    if (totalPages <= 1) {
+      pagination.style.display = 'none';
+      return;
+    }
+    
+    pagination.style.display = 'flex';
+    prevBtn.style.display = currentPage === 1 ? 'none' : 'inline-block';
+    nextBtn.style.display = currentPage === totalPages ? 'none' : 'inline-block';
+    
+    // Generate page numbers
+    let numbersHtml = '';
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === currentPage) {
+        numbersHtml += `<span class="page-current">${i}</span>`;
+      } else {
+        numbersHtml += `<button class="page-num" onclick="showPage(${i})">${i}</button>`;
+      }
+    }
+    pageNumbers.innerHTML = numbersHtml;
+  }
+
+  function setupPagination() {
+    const total = heroes.length;
+    const totalPages = Math.ceil(total / itemsPerPage);
+    
     if (totalPages <= 1) return;
     
-    // Hide all initially
-    heroes.forEach((card, index) => {
-      card.style.display = index < itemsPerPage ? 'flex' : 'none';
-    });
+    // Show first page
+    showPage(1);
   }
 
   // Initial setup
-  setupPagination(heroes.length);
+  setupPagination();
+
+  // Pagination buttons
+  document.getElementById('prev-btn').addEventListener('click', () => {
+    if (currentPage > 1) showPage(currentPage - 1);
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    const total = heroes.filter(c => c.style.display !== 'none').length;
+    const totalPages = Math.ceil(total / itemsPerPage);
+    if (currentPage < totalPages) showPage(currentPage + 1);
+  });
+
+  // Make showPage globally available
+  window.showPage = showPage;
 
   // Search functionality
   const searchForm = document.getElementById('search-form');
@@ -223,6 +275,13 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   .card-footer .tags { display: flex; gap: 0.4rem; }
   .card-footer .tag { background: linear-gradient(135deg, #ffcb00, #e5b800); color: #1a1a4a; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-weight: 600; }
   .read-more { color: #302681; font-size: 0.85rem; font-weight: 600; }
+
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 2rem 0; }
+  .page-btn { background: white; color: #302681; border: 2px solid #302681; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; }
+  .page-btn:hover { background: #302681; color: white; }
+  .page-current { background: #302681; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; }
+  .page-num { background: white; color: #302681; border: 1px solid #e5e7eb; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+  .page-num:hover { border-color: #302681; }
 
   .footer { text-align: center; padding: 2rem 0; color: #9ca3af; border-top: 2px solid #ffcb00; background: #f9fafb; }
 </style>
