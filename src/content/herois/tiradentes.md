@@ -2,20 +2,7 @@
 nome: "Tiradentes"
 titulo: "Herói da Independência do Brasil"
 periodo: "1746-1792"
-foto: "/herois/tiradentes.jpg"
-fotos:
-  - url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400"
-    descricao: "Retrato artístico de Tiradentes"
-    copyright: "Domínio público"
-  - url: "https://images.unsplash.com/photo-1531844251246-9a1bfaaeeb9a?w=400"
-    descricao: "Monumento a Tiradentes em Ouro Preto"
-    copyright: "Acervo público"
-  - url: "https://images.unsplash.com/photo-1580130547518-2bcf0c44ce67?w=400"
-    descricao: "Cenário histórico de Minas Gerais"
-    copyright: "Unsplash"
-  - url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400"
-    descricao: "Arte histórica brasileira"
-    copyright: "Unsplash"
+foto: "/herois/tiradentes/tiradentes.jpg"
 tags:
   - Independência
   - Minas Gerais
@@ -24,8 +11,6 @@ tags:
 fontes:
   - titulo: "Wikipedia - Tiradentes"
     url: "https://pt.wikipedia.org/wiki/Tiradentes"
-  - titulo: "InfoEscola - Tiradentes"
-    url: "https://www.infoescola.com/biografias/tiradentes/"
 ---
 
 Joaquim José da Silva Xavier, conhecido como Tiradentes, foi um dentista, minerador e ativista político brasileiro, líder da Inconfidência Mineira.
@@ -46,7 +31,7 @@ Hoje, Tiradentes é símbolo da luta pela liberdade e tem seu nome imortalizado 
 
 ### ❌ "Tiradentes era apenas um dentista"
 
-**Falso!** Embora fosse dentista, Tiradentes era principalmente um ativista político e líder da Inconfidência Mineira. A atividade dentistry era secundária.
+**Falso!** Embora fosse dentista, Tiradentes era principalmente um ativista político e líder da Inconfidência Mineira.
 
 ### ❌ "Tiradentes era pobre e ignorado"
 
