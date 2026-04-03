@@ -1,0 +1,152 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const herois = await getCollection('herois');
+  return herois.map(heroi => ({
+    params: { slug: heroi.id },
+    props: { 
+      data: heroi.data,
+      body: heroi.body
+    }
+  }));
+}
+
+const { data, body } = Astro.props;
+
+const title = `${data.nome} — ${data.titulo}`;
+const description = body?.substring(0, 160) || data.titulo;
+---
+
+<Layout title={title} description={description}>
+  <!-- Hero Header -->
+  <section class="hero-header">
+    <div class="container">
+      <a href="/" class="back-link">← Voltar</a>
+      <div class="hero-info">
+        <div class="hero-avatar">
+          {data.foto ? (
+            <img src={data.foto} alt={data.nome} />
+          ) : (
+            <span class="avatar-placeholder">🦸</span>
+          )}
+        </div>
+        <div class="hero-text">
+          <h1>{data.nome}</h1>
+          <p class="title">{data.titulo}</p>
+          <p class="period">{data.periodo}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="content-grid">
+      <article class="main-content">
+        <div class="biography" set:html={body.replace(/\n/g, '<br>')} />
+      </article>
+
+      <aside class="sidebar">
+        <section class="sidebar-section">
+          <h3>🏷️ Tags</h3>
+          <div class="tags">
+            {data.tags.map(tag => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h3>📚 Fontes</h3>
+          <div class="sources">
+            {data.fontes.map(fonte => (
+              <a href={fonte.url} target="_blank" rel="noopener" class="source-link">
+                {fonte.titulo} ↗
+              </a>
+            ))}
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 Heróis Brasileiros</p>
+  </footer>
+</Layout>
+
+<style>
+  :root {
+    --primary: #059669;
+    --primary-dark: #047857;
+    --primary-light: #d1fae5;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+  
+  .hero-header {
+    background: linear-gradient(135deg, var(--primary-dark), #065f46);
+    padding: 2rem 0;
+    color: white;
+  }
+
+  .back-link { color: #a7f3d0; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1rem; }
+  .back-link:hover { color: white; }
+
+  .hero-info { display: flex; align-items: center; gap: 1.5rem; }
+
+  .hero-avatar {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-placeholder { font-size: 3rem; }
+
+  .hero-text h1 { margin: 0; font-size: 2rem; }
+  .hero-text .title { margin: 0.25rem 0 0; color: #a7f3d0; font-size: 1.1rem; }
+  .hero-text .period { margin: 0.25rem 0 0; color: #6ee7b7; font-size: 0.9rem; }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+
+  @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+
+  .biography { color: var(--gray-700); line-height: 1.8; }
+
+  .sidebar-section {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .sidebar-section h3 { color: var(--gray-800); font-size: 0.95rem; margin: 0 0 0.75rem; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tag { background: var(--primary-light); color: var(--primary-dark); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+
+  .sources { display: flex; flex-direction: column; gap: 0.5rem; }
+  .source-link { color: #2563eb; text-decoration: none; font-size: 0.85rem; }
+  .source-link:hover { text-decoration: underline; }
+
+  .footer { text-align: center; padding: 2rem 0; color: var(--gray-400); border-top: 1px solid var(--gray-200); margin-top: 2rem; }
+</style>

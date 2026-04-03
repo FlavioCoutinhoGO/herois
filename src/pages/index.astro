@@ -1,36 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import herois from '../data/herois.json';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const herois = await getCollection('herois');
+  return herois.map(heroi => ({
+    params: { slug: heroi.slug },
+    props: { heroi }
+  }));
+}
+
+const herois = await getCollection('herois');
 
 const title = "Heróis Brasileiros — Histórias de Liderança e Coragem";
 const description = "Conheça a história dos maiores heróis do Brasil. Tiradentes, Zumbi dos Palmares, Santos Dumont e muito mais.";
 ---
 
 <Layout title={title} description={description}>
-  <section class="bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-900 text-white py-16 px-4">
-    <div class="max-w-4xl mx-auto text-center">
-      <h1 class="text-4xl md:text-5xl font-bold mb-4">🦸 Heróis Brasileiros</h1>
-      <p class="text-emerald-100 text-lg max-w-2xl mx-auto">
-        Histórias de liderança, coragem e transformação social que moldaram o Brasil.
-      </p>
+  <section class="hero-header">
+    <div class="container">
+      <h1>🦸 Heróis Brasileiros</h1>
+      <p>Histórias de liderança, coragem e transformação social que moldaram o Brasil.</p>
     </div>
   </section>
 
-  <main class="max-w-4xl mx-auto px-4 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {herois.map((heroi) => (
-        <a href={`/herois/${heroi.id}`} class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all group">
-          <div class="h-48 bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
-            <span class="text-6xl">🦸</span>
+  <main class="container">
+    <div class="heroes-grid">
+      {herois.map(heroi => (
+        <a href={`/herois/${heroi.slug}`} class="hero-card">
+          <div class="card-image">
+            {heroi.data.foto ? (
+              <img src={heroi.data.foto} alt={heroi.data.nome} />
+            ) : (
+              <span class="placeholder">🦸</span>
+            )}
           </div>
-          <div class="p-5">
-            <h2 class="font-bold text-lg text-gray-900 group-hover:text-emerald-600 transition-colors">{heroi.nome}</h2>
-            <p class="text-sm text-gray-500 mt-1">{heroi.titulo}</p>
-            <p class="text-xs text-gray-400 mt-1">{heroi.periodo}</p>
-            <p class="text-sm text-gray-600 mt-3 line-clamp-3">{heroi.resumo}</p>
-            <div class="flex gap-1.5 mt-3 flex-wrap">
-              {heroi.tags.map((tag) => (
-                <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{tag}</span>
+          <div class="card-content">
+            <h2>{heroi.data.nome}</h2>
+            <p class="subtitle">{heroi.data.titulo}</p>
+            <p class="period">{heroi.data.periodo}</p>
+            <p class="excerpt">{heroi.body?.substring(0, 120) || heroi.data.titulo}...</p>
+            <div class="tags">
+              {heroi.data.tags.slice(0, 3).map(tag => (
+                <span class="tag">{tag}</span>
               ))}
             </div>
           </div>
@@ -39,7 +51,147 @@ const description = "Conheça a história dos maiores heróis do Brasil. Tiraden
     </div>
   </main>
 
-  <footer class="border-t border-gray-200 py-8 text-center text-sm text-gray-400">
+  <footer class="footer">
     <p>© 2026 Heróis Brasileiros</p>
   </footer>
 </Layout>
+
+<style>
+  :root {
+    --primary: #059669;
+    --primary-dark: #047857;
+    --primary-light: #d1fae5;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .hero-header {
+    background: linear-gradient(135deg, var(--primary-dark), #065f46);
+    padding: 3rem 0;
+    color: white;
+    text-align: center;
+  }
+
+  .hero-header h1 {
+    margin: 0 0 0.5rem;
+    font-size: 2.5rem;
+  }
+
+  .hero-header p {
+    margin: 0;
+    color: #a7f3d0;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .heroes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0;
+  }
+
+  .hero-card {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+
+  .card-image {
+    height: 180px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-image .placeholder {
+    font-size: 4rem;
+  }
+
+  .card-content {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-content h2 {
+    margin: 0;
+    color: var(--gray-900);
+    font-size: 1.25rem;
+  }
+
+  .card-content .subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.9rem;
+  }
+
+  .card-content .period {
+    margin: 0.25rem 0 0;
+    color: var(--gray-400);
+    font-size: 0.8rem;
+  }
+
+  .card-content .excerpt {
+    margin: 0.75rem 0;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: auto;
+  }
+
+  .tag {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--gray-400);
+    border-top: 1px solid var(--gray-200);
+  }
+</style>
