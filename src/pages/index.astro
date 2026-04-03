@@ -46,13 +46,14 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   <main class="container">
     <!-- Search Bar -->
     <form class="search-form" id="search-form">
-      <input type="text" id="search-input" placeholder="🔍 Buscar heróis..." class="search-input" />
+      <input type="text" id="search-input" placeholder="🔍 Buscar por nome, tag, biografia..." class="search-input" />
       <button type="submit" class="search-btn">Buscar</button>
+      <button type="button" id="clear-btn" class="clear-btn" style="display:none">✕</button>
     </form>
 
     <div class="results-info" id="results-info" style="display:none">
       <span id="results-count"></span>
-      <a href="/" class="clear-search">← Limpar</a>
+      <a href="/" class="clear-search">🔄 Limpar</a>
     </div>
 
     <div class="heroes-grid" id="heroes-grid">
@@ -124,6 +125,7 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   // Search functionality
   const searchForm = document.getElementById('search-form');
   const searchInput = document.getElementById('search-input');
+  const clearBtn = document.getElementById('clear-btn');
   
   searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -133,10 +135,14 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
       const name = card.querySelector('h2').textContent.toLowerCase();
       const subtitle = card.querySelector('.subtitle').textContent.toLowerCase();
       const tags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.toLowerCase()).join(' ');
+      const body = card.querySelector('.excerpt').textContent.toLowerCase();
       
-      const match = name.includes(query) || subtitle.includes(query) || tags.includes(query);
+      const match = name.includes(query) || subtitle.includes(query) || tags.includes(query) || body.includes(query);
       card.style.display = match ? 'flex' : 'none';
     });
+    
+    // Show/hide clear button
+    clearBtn.style.display = searchInput.value ? 'block' : 'none';
     
     // Show results info
     const resultsInfo = document.getElementById('results-info');
@@ -147,6 +153,14 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
     } else {
       resultsInfo.style.display = 'none';
     }
+  });
+  
+  // Clear button
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    heroes.forEach(card => card.style.display = 'flex');
+    document.getElementById('results-info').style.display = 'none';
   });
 </script>
 
@@ -179,6 +193,9 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
   .search-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
   .search-input { flex: 1; padding: 1rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 1rem; font-size: 1rem; }
   .search-input:focus { outline: none; border-color: #302681; }
+  .clear-btn { background: #ef4444; color: white; border: none; padding: 1rem; border-radius: 1rem; cursor: pointer; font-size: 1rem; }
+  .clear-btn:hover { background: #dc2626; }
+
   .search-btn { background: #302681; color: white; border: none; padding: 1rem 2rem; border-radius: 1rem; font-weight: 600; cursor: pointer; }
   .search-btn:hover { background: #241a5e; }
 
