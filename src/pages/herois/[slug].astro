@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { marked } from 'marked';
 
 export async function getStaticPaths() {
   const herois = await getCollection('herois');
@@ -8,22 +9,33 @@ export async function getStaticPaths() {
     params: { slug: heroi.id },
     props: { 
       data: heroi.data,
-      body: heroi.body
+      rawBody: heroi.body
     }
   }));
 }
 
-const { data, body } = Astro.props;
+const { data, rawBody } = Astro.props;
+
+// Parsear markdown para HTML
+const htmlContent = await marked.parse(rawBody || '');
+
+// Extrair seções do conteúdo
+const sections = rawBody?.split('## ') || [];
+
+// Função para verificar se tem YouTube
+const youtubeMatch = rawBody?.match(/https?:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/);
+const youtubeId = youtubeMatch ? youtubeMatch[1] : null;
 
 const title = `${data.nome} — ${data.titulo}`;
-const description = body?.substring(0, 160) || data.titulo;
+const description = rawBody?.substring(0, 160) || data.titulo;
 ---
 
 <Layout title={title} description={description}>
   <!-- Hero Header -->
   <section class="hero-header">
+    <div class="header-pattern"></div>
     <div class="container">
-      <a href="/" class="back-link">← Voltar</a>
+      <a href="/" class="back-link">← Voltar aos Heróis</a>
       <div class="hero-info">
         <div class="hero-avatar">
           {data.foto ? (
@@ -35,7 +47,7 @@ const description = body?.substring(0, 160) || data.titulo;
         <div class="hero-text">
           <h1>{data.nome}</h1>
           <p class="title">{data.titulo}</p>
-          <p class="period">{data.periodo}</p>
+          <p class="period">📅 {data.periodo}</p>
         </div>
       </div>
     </div>
@@ -43,12 +55,39 @@ const description = body?.substring(0, 160) || data.titulo;
 
   <main class="container">
     <div class="content-grid">
+      <!-- Main Content -->
       <article class="main-content">
-        <div class="biography" set:html={body.replace(/\n/g, '<br>')} />
+        <!-- Biografia renderizada do Markdown -->
+        <section class="section biography-section">
+          <h2 class="section-title">
+            <span class="icon">📖</span> Biografia
+          </h2>
+          <div class="biography" set:html={htmlContent} />
+        </section>
+
+        <!-- Seção de Vídeo YouTube Embed -->
+        {youtubeId && (
+          <section class="section video-section">
+            <h2 class="section-title">
+              <span class="icon">🎬</span> Assista
+            </h2>
+            <div class="video-container">
+              <iframe 
+                src={`https://www.youtube.com/embed/${youtubeId}`}
+                title="Vídeo sobre {data.nome}"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </section>
+        )}
       </article>
 
+      <!-- Sidebar -->
       <aside class="sidebar">
-        <section class="sidebar-section">
+        <!-- Tags -->
+        <section class="sidebar-section tags-section">
           <h3>🏷️ Tags</h3>
           <div class="tags">
             {data.tags.map(tag => (
@@ -57,114 +96,311 @@ const description = body?.substring(0, 160) || data.titulo;
           </div>
         </section>
 
-        <section class="sidebar-section">
+        <!-- Estatísticas -->
+        <section class="sidebar-section stats-section">
+          <h3>📊 Sobre</h3>
+          <div class="stat-item">
+            <span class="stat-label">Período</span>
+            <span class="stat-value">{data.periodo}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Palavras</span>
+            <span class="stat-value">{rawBody?.split(' ').length || 0}</span>
+          </div>
+        </section>
+
+        <!-- Fontes -->
+        <section class="sidebar-section sources-section">
           <h3>📚 Fontes</h3>
           <div class="sources">
             {data.fontes.map(fonte => (
               <a href={fonte.url} target="_blank" rel="noopener" class="source-link">
-                {fonte.titulo} ↗
+                <span class="source-icon">🔗</span>
+                {fonte.titulo}
               </a>
             ))}
+          </div>
+        </section>
+
+        <!-- Compartilhamento -->
+        <section class="sidebar-section share-section">
+          <h3>📤 Compartilhar</h3>
+          <div class="share-buttons">
+            <a href={`https://twitter.com/intent/tweet?text=Conheça ${data.nome}&url=${Astro.url}`} target="_blank" class="share-btn twitter">𝕏</a>
+            <a href={`https://wa.me/?text=Conheça ${data.nome}: ${Astro.url}`} target="_blank" class="share-btn whatsapp">💬</a>
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=${Astro.url}`} target="_blank" class="share-btn facebook">f</a>
           </div>
         </section>
       </aside>
     </div>
   </main>
 
+  <!-- Footer -->
   <footer class="footer">
-    <p>© 2026 Heróis Brasileiros</p>
+    <div class="container">
+      <p>🇧🇷 Heróis Brasileiros — Celebrando quem fez história</p>
+    </div>
   </footer>
 </Layout>
 
-<style>
+<style is:global>
+  /* Variáveis cores bandeira brasileira */
   :root {
-    --primary: #ffcb00;
-    --primary-dark: #e5a900;
-    --primary-light: #fff9e6;
-    --accent: #302681;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
+    --verde: #009440;
+    --amarelo: #ffcb00;
+    --azul: #302681;
+    --branco: #FFFFFF;
+    --cinza-50: #f9fafb;
+    --cinza-100: #f3f4f6;
+    --cinza-200: #e5e7eb;
+    --cinza-400: #9ca3af;
+    --cinza-500: #6b7280;
+    --cinza-600: #4b5563;
+    --cinza-700: #374151;
+    --cinza-800: #1f2937;
+    --cinza-900: #111827;
   }
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
-  
+  /* Estilos do conteúdo Markdown renderizado */
+  .biography {
+    color: var(--cinza-700);
+    line-height: 1.9;
+    font-size: 1.05rem;
+  }
+
+  .biography h2 {
+    color: var(--azul);
+    font-size: 1.4rem;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--amarelo);
+  }
+
+  .biography h3 {
+    color: var(--verde);
+    font-size: 1.2rem;
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  .biography p {
+    margin-bottom: 1rem;
+    text-align: justify;
+  }
+
+  .biography ul, .biography ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .biography li {
+    margin-bottom: 0.5rem;
+  }
+
+  .biography strong {
+    color: var(--azul);
+  }
+
+  .biography em {
+    color: var(--verde);
+    font-style: normal;
+  }
+
+  /* Fake news styling */
+  .biography h3:has(❌), .biography h3:has(Fake) {
+    background: #fee2e2;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #dc2626;
+  }
+</style>
+
+<style>
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+  /* Hero Header - Fundo estilizado */
   .hero-header {
-    background: linear-gradient(135deg, #302681 0%, #009440 50%, #302681 100%);
+    background: linear-gradient(135deg, var(--azul) 0%, #1a1a4a 50%, var(--azul) 100%);
     background-image: 
-      radial-gradient(ellipse at top right, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom left, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
-      linear-gradient(135deg, #302681 0%, #009440 100%);
-    padding: 3rem 0;
+      radial-gradient(ellipse at 20% 80%, rgba(0, 148, 64, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(255, 203, 0, 0.15) 0%, transparent 50%),
+      linear-gradient(135deg, var(--azul) 0%, #1a1a4a 100%);
+    padding: 0;
     color: white;
     position: relative;
     overflow: hidden;
   }
 
-  .hero-header::before {
-    content: '';
+  .header-pattern {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    opacity: 0.5;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.6;
   }
 
-  .back-link { color: #a7f3d0; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1rem; }
+  .back-link { 
+    color: var(--amarelo); 
+    text-decoration: none; 
+    font-size: 0.95rem; 
+    display: inline-block; 
+    margin: 1.5rem 0;
+    font-weight: 500;
+  }
   .back-link:hover { color: white; }
 
-  .hero-info { display: flex; align-items: center; gap: 1.5rem; }
+  .hero-info { 
+    display: flex; 
+    align-items: center; 
+    gap: 2rem; 
+    padding-bottom: 2rem;
+    position: relative;
+  }
 
   .hero-avatar {
-    width: 100px; height: 100px;
+    width: 140px; 
+    height: 140px;
     border-radius: 50%;
     overflow: hidden;
-    background: rgba(255,255,255,0.1);
-    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--amarelo), var(--verde));
+    border: 4px solid white;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   }
 
   .hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .avatar-placeholder { font-size: 3rem; }
+  .avatar-placeholder { font-size: 4rem; display: flex; align-items: center; justify-content: center; height: 100%; }
 
-  .hero-text h1 { margin: 0; font-size: 2rem; }
-  .hero-text .title { margin: 0.25rem 0 0; color: #a7f3d0; font-size: 1.1rem; }
-  .hero-text .period { margin: 0.25rem 0 0; color: #6ee7b7; font-size: 0.9rem; }
+  .hero-text h1 { 
+    margin: 0; 
+    font-size: 2.5rem; 
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+  .hero-text .title { 
+    margin: 0.5rem 0 0; 
+    color: var(--amarelo); 
+    font-size: 1.25rem; 
+    font-weight: 500;
+  }
+  .hero-text .period { 
+    margin: 0.25rem 0 0; 
+    color: rgba(255,255,255,0.8); 
+    font-size: 1rem; 
+  }
 
+  /* Grid */
   .content-grid {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr 320px;
     gap: 2rem;
     padding: 2rem 0;
   }
 
-  @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
-
-  .biography { color: var(--gray-700); line-height: 1.8; }
-
-  .sidebar-section {
-    background: white;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  @media (max-width: 900px) { 
+    .content-grid { grid-template-columns: 1fr; } 
+    .hero-info { flex-direction: column; text-align: center; }
   }
 
-  .sidebar-section h3 { color: var(--gray-800); font-size: 0.95rem; margin: 0 0 0.75rem; }
+  /* Sections */
+  .section { margin-bottom: 2rem; }
+  
+  .section-title {
+    color: var(--azul);
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .section-title .icon { font-size: 1.5rem; }
+
+  /* Video */
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 1rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  }
+
+  .video-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* Sidebar */
+  .sidebar-section {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-top: 3px solid var(--amarelo);
+  }
+
+  .sidebar-section h3 { 
+    color: var(--azul); 
+    font-size: 1rem; 
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
 
   .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .tag { background: var(--primary-light); color: var(--primary-dark); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+  .tag { 
+    background: linear-gradient(135deg, var(--verde), #007a33); 
+    color: white; 
+    font-size: 0.75rem; 
+    padding: 0.35rem 0.75rem; 
+    border-radius: 2rem;
+    font-weight: 500;
+  }
 
-  .sources { display: flex; flex-direction: column; gap: 0.5rem; }
-  .source-link { color: #2563eb; text-decoration: none; font-size: 0.85rem; }
-  .source-link:hover { text-decoration: underline; }
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--cinza-100);
+  }
+  .stat-item:last-child { border: none; }
+  .stat-label { color: var(--cinza-500); font-size: 0.9rem; }
+  .stat-value { color: var(--azul); font-weight: 600; }
 
-  .footer { text-align: center; padding: 2rem 0; color: var(--gray-400); border-top: 1px solid var(--gray-200); margin-top: 2rem; }
+  .sources { display: flex; flex-direction: column; gap: 0.75rem; }
+  .source-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--azul);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background 0.2s;
+  }
+  .source-link:hover { background: var(--cinza-50); }
+  .source-icon { font-size: 1rem; }
+
+  .share-buttons { display: flex; gap: 0.75rem; }
+  .share-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .share-btn:hover { transform: scale(1.1); }
+  .twitter { background: #000; color: white; }
+  .whatsapp { background: #25D366; color: white; }
+  .facebook { background: #1877F2; color: white; }
+
+  .footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--cinza-400);
+    border-top: 2px solid var(--amarelo);
+    margin-top: 2rem;
+    background: var(--cinza-50);
+  }
 </style>
