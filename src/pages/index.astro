@@ -99,7 +99,29 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
 
 <script>
 // Simple pagination without DOMContentLoaded wrapper - let browser handle it
-const heroes = document.querySelectorAll('.hero-card');
+
+// Fisher-Yates shuffle function
+function shuffleArray(array) {
+  var shuffled = Array.from(array);
+  for (var i = shuffled.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = shuffled[i];
+    shuffled[i] = shuffled[j];
+    shuffled[j] = temp;
+  }
+  return shuffled;
+}
+
+// Get all hero cards and shuffle them
+var originalHeroes = document.querySelectorAll('.hero-card');
+var heroes = shuffleArray(originalHeroes);
+
+// Rearrange DOM to show shuffled order
+var grid = document.getElementById('heroes-grid');
+heroes.forEach(function(hero) {
+  grid.appendChild(hero);
+});
+
 const itemsPerPage = 6;
 let currentPage = 1;
 
