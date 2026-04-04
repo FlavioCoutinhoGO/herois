@@ -56,7 +56,7 @@ const description = "Conheça a história dos maiores heróis do Brasil.";
 
     <div class="heroes-grid" id="heroes-grid">
       {herois.map(heroi => (
-        <a href={`/herois/${heroi.id}`} class="hero-card">
+        <a href={`/herois/${heroi.id.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-')}`} class="hero-card">
           <div class="card-badge">⭐</div>
           <div class="card-image">
             {heroi.data.foto ? (
@@ -217,6 +217,7 @@ clearBtn.onclick = function() {
   clearBtn.style.display = 'none';
   heroes.forEach(function(card) { card.style.display = 'flex'; });
   document.getElementById('results-info').style.display = 'none';
+  showPage(1); // Reset pagination
 };
 </script>
 

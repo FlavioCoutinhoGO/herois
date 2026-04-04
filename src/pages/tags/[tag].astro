@@ -58,7 +58,7 @@ const description = `Veja os ${tag.count} heróis brasileiros com a tag "${tag.n
   <main class="container">
     <div class="heroes-grid">
       {tag.heroes.map(heroi => (
-        <a href={`/herois/${heroi.slug}`} class="hero-card">
+        <a href={`/herois/${heroi.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-")}`} class="hero-card">
           <div class="card-image">
             {heroi.foto ? (
               <img src={getThumb(heroi.foto)} alt={heroi.nome} loading="lazy" />
